@@ -1,2 +1,5 @@
-import { productManager } from "../classes/productManager.js";
-export const manager = new productManager("./products.json");
+import { ProductManager } from "../classes/ProductManager.js";
+import { CartManager } from "../classes/CartManager.js";
+
+export const cartManager = new CartManager("./data/carts.json");
+export const manager = new ProductManager("./data/products.json");

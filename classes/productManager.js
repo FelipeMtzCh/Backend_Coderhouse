@@ -1,93 +1,83 @@
 import fs from "fs";
-export class productManager {
-  constructor(savePath) {
+
+export class ProductManager {
+  constructor(savepath) {
     this.products = [];
-    this.savePath = savePath;
+    this.savePath = savepath;
   }
+
+  _checkCode = (code) => {
+    const codeFound = this.products.findIndex(
+      (product) => product.code === code
+    );
+    if (codeFound != -1) {
+      console.log(`El codigo ${code} ya esta registrado`);
+      throw new Error(`El codigo ${code} ya esta registrado`);
+    }
+  };
+
+  _generateId = (product) => {
+    this.products.length === 0
+      ? (product.id = 1)
+      : (product.id = this.products[this.products.length - 1].id + 1);
+  };
 
   getProducts = async () => {
     try {
-      let response = await fs.promises.readFile(this.savePath, "utf-8");
-      return JSON.parse(response);
+      const res = await fs.promises.readFile(this.savePath, "utf-8");
+      return JSON.parse(res);
     } catch (error) {
       console.log(error);
     }
   };
 
-  registeredCode = (productCode) => {
-    const registeredCode = this.products.findIndex(
-      (product) => product.code === productCode
-    );
-    if (registeredCode != -1) {
-      console.log(`El codigo ${productCode} ya esta registrado`);
+  getProductById = (id) => {
+    const product = this.products.find((product) => product.id === id);
+    if (!product) {
+      console.log(`No existe el producto con id ${id}`);
       return;
     }
+    return product;
   };
 
-  addProduct = (title, description, price, thumbnail, code, stock) => {
-    if (!title || !description || !price || !thumbnail || !code || !stock) {
-      console.log(`Faltan datos en el producto ${title}`);
-      return;
+  addProduct = (
+    title,
+    description,
+    code,
+    price,
+    status = true,
+    stock,
+    category,
+    thumbnails = []
+  ) => {
+    if (!title || !description || !code || !price || !stock || !category) {
+      throw new Error(`Faltan datos en el producto ${title}`);
     }
     let product = {
       title,
       description,
-      price,
-      thumbnail,
       code,
+      price,
+      status,
       stock,
+      category,
+      thumbnails,
     };
-    this.registeredCode(code);
-    if (this.products.length === 0) {
-      product.id = 1;
-    } else {
-      product.id = this.products[this.products.length - 1].id + 1;
+    if (this._checkCode(code)) {
+      throw new Error(`El codigo ${code} ya esta registrado`);
     }
+    this._generateId(product);
     this.products.push(product);
     fs.promises.writeFile(this.savePath, `${JSON.stringify(this.products)}`);
   };
 
-  getProductById(idProduct) {
-    let product = this.products.find((product) => product.id === idProduct);
+  deleteProduct = (id) => {
+    const product = this.getProductById(id);
     if (!product) {
-      console.log(`No existe el producto con id ${idProduct}`);
+      console.log(`No existe el producto con id ${id}`);
       return;
     }
-    return product;
-  }
-
-  deleteProduct(idProduct) {
-    let product = this.products.find((product) => product.id === idProduct);
-    if (!product) {
-      console.log(`No existe el producto con id ${idProduct}`);
-      return;
-    }
-  }
+    const index = this.products.findIndex((product) => product.id === id);
+    this.products.splice(index, 1);
+  };
 }
-
-// const productTester = new productManager("./products.json");
-// productTester.addProduct(
-//   "Endulzante",
-//   "Endulzante sabor caramelo en presentacion de 100ml",
-//   70000,
-//   "Sin imagen",
-//   1123,
-//   10
-// );
-// productTester.addProduct(
-//   "Cafe fuerte",
-//   "Cafe fuerte marca Monte Verde, 500g",
-//   57000,
-//   "Sin imagen",
-//   1124,
-//   14
-// );
-// productTester.addProduct(
-//   "Cafe suave",
-//   "Cafe suave marca Manban, 500g",
-//   50000,
-//   "Sin imagen",
-//   1125,
-//   9
-// );
-// console.log(productTester.getProducts());

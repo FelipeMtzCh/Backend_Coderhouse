@@ -21,8 +21,26 @@ export const getProductById = async (req, res) => {
 
 export const addProduct = async (req, res) => {
   try {
-    const { title, description, price, thumbnail, code, stock } = req.body;
-    await manager.addProduct(title, description, price, thumbnail, code, stock);
+    const {
+      title,
+      description,
+      code,
+      price,
+      status,
+      stock,
+      category,
+      thumbnails,
+    } = req.body;
+    await manager.addProduct(
+      title,
+      description,
+      code,
+      price,
+      status,
+      stock,
+      category,
+      thumbnails
+    );
     res.status(200).json({ message: "Producto agregado" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -33,7 +51,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await manager.deleteProduct(id);
-    res.status(200);
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
